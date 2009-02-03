@@ -2,8 +2,6 @@
 /**
  * Rest Library
  *
- * $Id: Rest.php 20 2008-05-19 20:37:49Z samsoffes $
- *
  * @author     Sam Soffes
  * @author     Josh Turmel
  * @copyright  (c) 2008 LifeChurch.tv
@@ -16,15 +14,15 @@ class Rest_Core {
 	
 	public $output;
 	
-	public function __construct($use_cache = false, $cache_lifetime = null)
+	public function __construct($use_cache = FALSE, $cache_lifetime = NULL)
 	{
 		$this->use_cache      = $use_cache;
 		$this->cache_lifetime = $cache_lifetime;
 		
 		$this->cache          = new Cache;
 		
-		$this->setReturnTransfer(true);
-		$this->setUserAgent(Kohana::user_agent() or true);
+		$this->setReturnTransfer(TRUE);
+		$this->setUserAgent(Kohana::user_agent() or TRUE);
 	}
 	
 	public function setReferer($val)
@@ -80,7 +78,7 @@ class Rest_Core {
 			// Store in cache
 			if ($this->use_cache)
 			{
-				$this->cache->set($cache_name, serialize($this->output), null, $this->cache_lifetime);
+				$this->cache->set($cache_name, serialize($this->output), NULL, $this->cache_lifetime);
 			}
 		}
 		

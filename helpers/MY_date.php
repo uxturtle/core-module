@@ -4,7 +4,6 @@
  * @abstract Extends core date helper class
  * @author Josh Turmel
  */
- 
 class date extends date_Core {
 
 	/**
@@ -39,9 +38,7 @@ class date extends date_Core {
 	public static function offset($start_day)
 	{
 		$days = array();
-	
 		$weekdays = self::weekdays();
-	
 		$day_of_week = date('w', strtotime($start_day)); // 4
 		
 		// If Sunday, do nothing, return normal PHP week day ordering
@@ -51,7 +48,6 @@ class date extends date_Core {
 			{
 				$days[$day[0]] = $key;
 			}
-			
 			return $days;
 		}
 		
@@ -60,9 +56,8 @@ class date extends date_Core {
 		foreach ($weekdays as $key => $day)
 		{
 			$c_day_of_week = $key;
-		
 			$diff = ($c_day_of_week - $day_of_week);
-			
+
 			switch (true)
 			{
 				case ($c_day_of_week >= $day_of_week):
@@ -71,10 +66,8 @@ class date extends date_Core {
 				default:
 					$day_num = $key;
 			}
-			
 			$days[$day[0]] = $day_num;
 		}
-		
 		return $days;
 	}
 	
@@ -94,19 +87,17 @@ class date extends date_Core {
 		if (func_num_args() === 1)
 		{
 			$time = strtotime(func_get_arg(0));
-	
 			$month = date('n', $time);
 			$year  = date('Y', $time);
-		
-		} elseif (func_num_args() === 2) {
-			
+		}
+		elseif (func_num_args() === 2)
+		{
 			$month = (int) func_get_arg(0) * 3;
 			$year  = (int) func_get_arg(1);
-		
-		} else {
-		
+		}
+		else
+		{
 			$time = time();
-			
 			$month = date('n', $time);
 			$year  = date('Y', $time);
 		}
@@ -132,7 +123,7 @@ class date extends date_Core {
 		}
 		
 		$month = date('n', $time);
-	
+
 		switch (true)
 		{			
 			case $month < 4:

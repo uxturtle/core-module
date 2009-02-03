@@ -8,7 +8,7 @@
  */
 class Rest_xml_Core extends Rest_Core {
 
-	public function __construct($use_cache = false, $cache_lifetime = null)
+	public function __construct($use_cache = FALSE, $cache_lifetime = NULL)
 	{
 		parent::__construct($use_cache, $cache_lifetime);
 	}
@@ -23,7 +23,7 @@ class Rest_xml_Core extends Rest_Core {
 		}
 		else
 		{
-			return false;
+			return FALSE;
 		}
 	}
 }

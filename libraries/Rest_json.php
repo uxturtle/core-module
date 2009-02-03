@@ -8,16 +8,15 @@
  */
 class Rest_json_Core extends Rest_Core {
 
-	public function __construct($use_cache = false, $cache_lifetime = null)
+	public function __construct($use_cache = FALSE, $cache_lifetime = NULL)
 	{
 		parent::__construct($use_cache, $cache_lifetime);
 	}
 
-	public function fetch($url, $levels = null)
+	public function fetch($url, $levels = NULL)
 	{
 		parent::fetch($url);
 		$this->output = json_encode($this->output);
-
 		return $this->output;
 	}
 }

@@ -4,7 +4,6 @@
  * @abstract Extends core num helper class
  * @author Josh Turmel
  */
- 
 class num extends num_Core {
 
 	/**
@@ -20,9 +19,9 @@ class num extends num_Core {
 		{
 			return '';
 		}
-		
+
 		$last_number = substr($number, -1);
-		
+
 		switch(true)
 		{
 			case $last_number == 1:

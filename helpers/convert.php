@@ -1,16 +1,14 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-
-/* ------------------------------------------------------
-
-Helper - convert
-
-Author: Josh Turmel
-Date: 2008-04-23
-Description:
-	This class converts data to and from different formats.
-
------------------------------------------------------- */
-class convert {
+/**
+ * country_state
+ *
+ * @package core
+ * @author Josh Turmel
+ *
+ * This class converts data to and from different formats
+ *
+ **/
+class convert_Core {
 	
 	public static function xmlToJson($xml, $levels = null) {
 
@@ -18,7 +16,6 @@ class convert {
 			return false;
 			
 		$xml = new SimpleXMLElement($xml);
-		
 		$json = false; 
 
 		// Let us convert the XML structure into PHP array structure.
@@ -36,24 +33,27 @@ class convert {
 		{
 			$json = json_encode($array);
 		}
-
 		return $json;
 	}
 	
 	public static function simpleXmlToArray($xml, &$recursion_depth = 0)
 	{
-		if ($recursion_depth > 25) {
+		if ($recursion_depth > 25)
+		{
 			// Fatal error. Exit now.
-			return(null);
+			return null;
 		}
 
 		if ($recursion_depth == 0)
 		{
-			if (get_class($xml) != 'SimpleXMLElement') {
+			if (get_class($xml) != 'SimpleXMLElement')
+			{
 			    // If the external caller doesn't call this function initially 
 			    // with a SimpleXMLElement object, return now. 
 			    return null; 
-			} else {
+			}
+			else
+			{
 			    // Store the original SimpleXmlElementObject sent by the caller.
 			    // We will need it at the very end when we return from here for good.
 			    $provided_xml = $xml;
@@ -86,7 +86,8 @@ class convert {
 			
 			
 			// Let us walk through the child elements now.
-			foreach ($xml as $key => $value) {
+			foreach ($xml as $key => $value)
+			{
 				// When this block of code is commented, XML attributes will be
 				// added to the result array.
 				// Uncomment the following block of code if XML attributes are 
@@ -96,7 +97,6 @@ class convert {
 				  continue;
 				}
 				*/
-				
 				
 				// Let us recursively process the current element we just visited.
 				// Increase the recursion depth by one.
@@ -108,7 +108,8 @@ class convert {
 				$recursion_depth--;
 			}
 			
-			if ($recursion_depth == 0) {
+			if ($recursion_depth == 0)
+			{
 			  // That is it. We are heading to the exit now.
 			  // Set the XML root element name as the root [top-level] key of
 			  // the associative array that we are going to return to the caller of this
@@ -119,11 +120,12 @@ class convert {
 			}
 			
 			return ($result_array);
-		} else {
+		}
+		else
+		{
 		  // We are now looking at either the XML attribute text or
 		  // the text between the XML tags.
 		  return trim(strval($xml));
 		} // End of else
-
 	}
 }
