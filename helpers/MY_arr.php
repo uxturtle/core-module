@@ -40,18 +40,29 @@ class arr extends arr_Core {
 		{
 		   // bool
 		   case (is_bool($value)):
-		      $svalue = "<$tag>".($value ? "TRUE" : "FALSE")."</$tag>";
+		      $svalue = "<$tag>".($value ? "1" : "0")."</$tag>";
 		      break;
 		      
 			// string
 			case (is_string($value)):
-				// TODO: correctly parse &
-				$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+			   if (trim($value) == '') 
+			   {
+			      $svalue = "<$tag />";
+		      }
+		      else
+		      {
+				   // TODO: correctly parse &
+   				$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+				}
 				break;
 
 			// assoc array
 			case (is_array($value)):
-			   if (arr::is_assoc($value))
+			   if (empty($value))
+			   {
+			      $svalue = "<$tag />";
+		      }
+		      else if (arr::is_assoc($value))
 			   {
 			      if ($tag != '') 
    			   { 
