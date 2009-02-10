@@ -184,4 +184,11 @@ class arr extends arr_Core {
 		}
 		return $tabs;
 	}
+	
+	function get($key, $array, $default = NULL)
+	{
+		if (!array_key_exists($key, $array)) { return $default; }
+		
+		return $array[$key];
+	}
 }
