@@ -2,11 +2,14 @@
 
 class arr extends arr_Core {
 
-	public static $plist_eol = "\n";
-
+	public static $eol = "\n";
+	public static $tab = "\t";
+	
+	public static $xml_default_tag = "item";
+	
 	public static function is_assoc(array $array)
 	{
-		// Keys of the array 
+		// Keys of the array
 		$keys = array_keys($array);
 
 		// If the array keys of the keys match the keys, then the array must
@@ -14,13 +17,91 @@ class arr extends arr_Core {
 		return array_keys($keys) !== $keys;
 	}
 
+   /**
+    * to_xml
+    *
+    * @param array $array 
+    * @param string $default_tag 
+    * @param bool $include_header 
+    * @return void
+    * @author Kevin Morey
+    */
+   public static function to_xml(array $array, $root_tag = '')
+   {
+      $out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol;
+      $out .= arr::parse_xml_value($array, $root_tag);
+      return $out;
+   }
+   
+   public static function parse_xml_value($value, $tag = '', $tab_level = 0)
+   {
+      // Determine the type
+		switch (true)
+		{
+		   // bool
+		   case (is_bool($value)):
+		      $svalue = "<$tag>".($value ? "TRUE" : "FALSE")."</$tag>";
+		      break;
+		      
+			// string
+			case (is_string($value)):
+				// TODO: correctly parse &
+				$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+				break;
+
+			// assoc array
+			case (is_array($value)):
+			   if (arr::is_assoc($value))
+			   {
+			      if ($tag != '') 
+   			   { 
+   			      $svalue="<$tag>".arr::$eol;
+   				   $tab_level++;
+   				}
+   				foreach ($value as $vkey => $vvalue)
+   				{
+   					$svalue .= self::parse_xml_value($vvalue, $vkey, $tab_level);
+   				}
+   				if ($tag != '') 
+   				{ 
+   				   $tab_level--;
+   				   $svalue.=self::tabs($tab_level)."</$tag>"; 
+   				}
+			   }
+            else 
+            {
+ 			      if ($tag != '') 
+    			   { 
+    			      $svalue="<$tag>".arr::$eol;
+    				   $tab_level++;
+    				}
+   				foreach ($value as $vvalue)
+   				{
+   					$svalue .= self::parse_xml_value($vvalue, arr::$xml_default_tag, $tab_level);
+   				}   
+   				if ($tag != '') 
+      			{ 
+   				   $tab_level--;
+   				   $svalue.=self::tabs($tab_level)."</$tag>"; 
+   				}
+				}
+				break;
+				
+			// others 
+			default:
+			   $svalue = "<$tag>$value</$tag>";
+			   break;
+		}
+		return self::tabs($tab_level).$svalue.arr::$eol;
+   }
+   
 	public static function to_plist(array $array)
 	{
-		$out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$plist_eol;
-		$out .= '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'.arr::$plist_eol;
-		$out .= '<plist version="1.0">'.arr::$plist_eol;
+		$out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol;
+		$out .= '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'.arr::$eol;
+		$out .= '<plist version="1.0">'.arr::$eol;
 		$out .= self::parse_plist_value($array);
-		$out .= '</plist>'.arr::$plist_eol;
+		$out .= '</plist>'.arr::$eol;
 		return $out;
 	}
 	
@@ -57,38 +138,38 @@ class arr extends arr_Core {
 
 			// dict
 			case (is_array($value) && arr::is_assoc($value)):
-				$svalue = ($key ? arr::$plist_eol.self::plist_tabs($tab_level) : '').'<dict>'.arr::$plist_eol;
+				$svalue = ($key ? arr::$eol.self::tabs($tab_level) : '').'<dict>'.arr::$eol;
 				$tab_level++;
 				foreach ($value as $vkey => $vvalue)
 				{
 					$svalue .= self::parse_plist_value($vvalue, $vkey, $tab_level);
 				}
 				$tab_level--;
-				$svalue .= self::plist_tabs($tab_level).'</dict>';
+				$svalue .= self::tabs($tab_level).'</dict>';
 				$svalue;
 				break;
 
 			// array
 			case (is_array($value) && !arr::is_assoc($value)):
-				$svalue = ($key ? arr::$plist_eol : '').self::plist_tabs($tab_level).'<array>'.arr::$plist_eol;
+				$svalue = ($key ? arr::$eol : '').self::tabs($tab_level).'<array>'.arr::$eol;
 				$tab_level++;
 				foreach ($value as $vvalue)
 				{
 					$svalue .= self::parse_plist_value($vvalue, FALSE, $tab_level);
 				}
 				$tab_level--;
-				$svalue .= self::plist_tabs($tab_level).'</array>';
+				$svalue .= self::tabs($tab_level).'</array>';
 				break;
 		}
-		return self::plist_tabs($tab_level).($key ? '<key>'.$key.'</key>' : '').$svalue.arr::$plist_eol;
+		return self::tabs($tab_level).($key ? '<key>'.$key.'</key>' : '').$svalue.arr::$eol;
 	}
 	
-	private static function plist_tabs($tab_level)
+	private static function tabs($tab_level)
 	{
 		$tabs = '';
 		for ($x = 0; $x < $tab_level; $x++)
 		{
-			$tabs .= "\t";
+			$tabs .= arr::$tab;
 		}
 		return $tabs;
 	}
