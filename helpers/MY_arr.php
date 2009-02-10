@@ -6,7 +6,7 @@ class arr extends arr_Core {
 
 	public static function is_assoc(array $array)
 	{
-		// Keys of the array
+		// Keys of the array 
 		$keys = array_keys($array);
 
 		// If the array keys of the keys match the keys, then the array must
