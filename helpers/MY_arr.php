@@ -17,6 +17,24 @@ class arr extends arr_Core {
 		return array_keys($keys) !== $keys;
 	}
 
+	/**
+	 * build_assoc
+	 * 
+	 * initializes an associative array to NULL
+	 *
+	 * @param array $keys the keys of the associative array
+	 * @return array the resulting array
+	 * @author Kevin Morey
+	 */
+	function build_assoc(array $keys)
+	{		
+		$arr = array();
+		
+		foreach ($keys as $key) { $arr[$key] = NULL; }
+		
+		return $arr;
+	}
+
    /**
     * to_xml
     *
