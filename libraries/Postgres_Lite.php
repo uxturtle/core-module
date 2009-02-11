@@ -474,6 +474,18 @@ class Postgres_Lite_Core {
 	{
 		return (bool) preg_match('/[<>!=]|\sIS(?:\s+NOT\s+)?\b/i', trim($str));
 	}
+
+	/**
+	 * Resets all private insert and update variables.
+	 *
+	 * @return  void
+	 */
+	protected function reset_write()
+	{
+		$this->set   = array();
+		$this->from  = array();
+		$this->where = array();
+	}
 } // End Postgres_Lite Class
 
 /**
