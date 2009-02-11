@@ -403,6 +403,66 @@ class Postgres_Lite_Core {
 
 		return '"'.str_replace('.', '"."', $table).'"';
 	}
+
+	/**
+	 * Builds a WHERE portion of a query.
+	 *
+	 * @param   mixed    key
+	 * @param   string   value
+	 * @param   string   type
+	 * @param   int      number of where clauses
+	 * @param   boolean  escape the value
+	 * @return  string
+	 */
+	public function where($key, $value, $type, $num_wheres, $quote)
+	{
+		$prefix = ($num_wheres == 0) ? '' : $type;
+
+		if ($quote === -1)
+		{
+			$value = '';
+		}
+		else
+		{
+			if ($value === NULL)
+			{
+				if ( ! $this->has_operator($key))
+				{
+					$key .= ' IS';
+				}
+
+				$value = ' NULL';
+			}
+			elseif (is_bool($value))
+			{
+				if ( ! $this->has_operator($key))
+				{
+					$key .= ' =';
+				}
+
+				$value = ($value == TRUE) ? ' 1' : ' 0';
+			}
+			else
+			{
+				if ( ! $this->has_operator($key))
+				{
+					$key = $this->escape_column($key).' =';
+				}
+				else
+				{
+					preg_match('/^(.+?)([<>!=]+|\bIS(?:\s+NULL))\s*$/i', $key, $matches);
+					if (isset($matches[1]) AND isset($matches[2]))
+					{
+						$key = $this->escape_column(trim($matches[1])).' '.trim($matches[2]);
+					}
+				}
+
+				$value = ' '.(($quote == TRUE) ? $this->escape($value) : $value);
+			}
+		}
+
+		return $prefix.$key.$value;
+	}
 } // End Postgres_Lite Class
 
 /**
