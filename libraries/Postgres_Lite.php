@@ -197,7 +197,34 @@ class Postgres_Lite_Core {
 		// A link can be a resource or an object
 		if ( ! is_resource($this->link) AND ! is_object($this->link))
 		{
-			$this->link = $this->driver->connect();
+			// Import the connect variables
+			extract($this->db_config['connection']);
+
+			// Persistent connections enabled?
+			$connect = ($this->db_config['persistent'] == TRUE) ? 'pg_pconnect' : 'pg_connect';
+
+			// Build the connection info
+			$port = isset($port) ? 'port=\''.$port.'\'' : '';
+			$host = isset($host) ? 'host=\''.$host.'\' '.$port : ''; // if no host, connect with the socket
+
+			$connection_string = $host.' dbname=\''.$database.'\' user=\''.$user.'\' password=\''.$pass.'\'';
+
+			// Make the connection and select the database
+			if ($this->link = $connect($connection_string))
+			{
+				if ($charset = $this->db_config['character_set'])
+				{
+					echo $this->set_charset($charset);
+				}
+		 
+				// Clear password after successful connect
+				$this->config['connection']['pass'] = NULL;
+			}
+			else
+			{
+				$this->link = FALSE;
+			}
+
 			if ( ! is_resource($this->link) AND ! is_object($this->link))
 				throw new Kohana_Postgres_Lite_Exception('postgres_lite.connection', $this->driver->show_error());
 
@@ -412,7 +439,9 @@ class Postgres_Lite_Core {
 	protected function escape_table($table)
 	{
 		if (!$this->db_config['escape'])
+		{
 			return $table;
+		}
 
 		return '"'.str_replace('.', '"."', $table).'"';
 	}
