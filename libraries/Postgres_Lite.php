@@ -463,6 +463,17 @@ class Postgres_Lite_Core {
 
 		return $prefix.$key.$value;
 	}
+
+	/**
+	* Determines if the string has an arithmetic operator in it.
+	*
+	* @param string string to check
+	* @return boolean
+	*/
+	protected function has_operator($str)
+	{
+		return (bool) preg_match('/[<>!=]|\sIS(?:\s+NOT\s+)?\b/i', trim($str));
+	}
 } // End Postgres_Lite Class
 
 /**
