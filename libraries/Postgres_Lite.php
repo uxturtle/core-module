@@ -30,7 +30,6 @@ class Postgres_Lite_Core {
 	protected $link;
 
 	// Un-compiled parts of the SQL query
-	protected $select     = array();
 	protected $set        = array();
 	protected $from       = array();
 	protected $join       = array();
@@ -271,7 +270,7 @@ class Postgres_Lite_Core {
 	 * @param   array   array of key/value pairs to insert
 	 * @return  Postgres_Lite_Result  Query result
 	 */
-	public function insert($table = '', $set = NULL)
+	public function insert($table, $set = NULL)
 	{
 		if ( ! is_null($set))
 		{
@@ -281,16 +280,6 @@ class Postgres_Lite_Core {
 		if ($this->set == NULL)
 			throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_set');
 
-		if ($table == '')
-		{
-			if ( ! isset($this->from[0]))
-				throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_table');
-
-			$table = $this->from[0];
-		}
-
-		//$sql = $this->driver->insert($this->config['table_prefix'].$table, array_keys($this->set), array_values($this->set));
-		/***/
 		$table  = $this->config['table_prefix'].$table;
 		$keys   = array_keys($this->set);
 		$values = array_values($this->set);
@@ -302,8 +291,8 @@ class Postgres_Lite_Core {
 		}
 
 		$sql = 'INSERT INTO '.$this->escape_table($table).' ('.implode(', ', $keys).') VALUES ('.implode(', ', $values).')';
-		/***/
-		//$this->reset_write();
+
+		$this->reset_write();
 
 		return $this->query($sql);
 	}
@@ -316,7 +305,7 @@ class Postgres_Lite_Core {
 	 * @param   array   where clause
 	 * @return  Postgres_Lite_Result  Query result
 	 */
-	public function update($table = '', $set = NULL, $where = NULL)
+	public function update($table, $set = NULL, $where = NULL)
 	{
 		if ( is_array($set))
 		{
@@ -330,14 +319,6 @@ class Postgres_Lite_Core {
 
 		if ($this->set == FALSE)
 			throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_set');
-
-		if ($table == '')
-		{
-			if ( ! isset($this->from[0]))
-				throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_table');
-
-			$table = $this->from[0];
-		}
 
 		$values = $this->set;
 		$where  = $this->where;
@@ -361,20 +342,8 @@ class Postgres_Lite_Core {
 	 * @param   array   where clause
 	 * @return  Postgres_Lite_Result  Query result
 	 */
-	public function delete($table = '', $where = NULL)
+	public function delete($table, $where = NULL)
 	{
-		if ($table == '')
-		{
-			if ( ! isset($this->from[0]))
-				throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_table');
-
-			$table = $this->from[0];
-		}
-		else
-		{
-			$table = $this->config['table_prefix'].$table;
-		}
-
 		if (! is_null($where))
 		{
 			$this->where($where);
@@ -385,7 +354,7 @@ class Postgres_Lite_Core {
 			throw new Kohana_Postgres_Lite_Exception('postgres_lite.must_use_where');
 		}
 
-		$sql = 'DELETE FROM '.$this->escape_table($table).' WHERE '.implode(' ', $this->where);
+		$sql = 'DELETE FROM '.$this->escape_table($this->config['table_prefix'].$table).' WHERE '.implode(' ', $this->where);
 
 		$this->reset_write();
 
@@ -433,6 +402,7 @@ class Postgres_Lite_Core {
 				$column .= $parts[$i].' ';
 			}
 		}
+
 		return $column;
 	}
 
