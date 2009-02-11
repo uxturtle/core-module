@@ -53,7 +53,9 @@ class arr extends arr_Core {
    
    public static function parse_xml_value($value, $tag = '', $tab_level = 0)
    {
-      // Determine the type
+		$svalue = '';
+
+		// Determine the type
 		switch (true)
 		{
 		   // bool
