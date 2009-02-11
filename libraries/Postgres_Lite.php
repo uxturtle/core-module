@@ -21,26 +21,14 @@ class Postgres_Lite_Core {
 		'character_set' => 'utf8',
 		'table_prefix'  => '',
 		'object'        => TRUE,
-		'cache'         => FALSE,
 		'escape'        => TRUE,
 	);
 
-	// Database driver object
-	protected $driver;
 	protected $link;
 
 	// Un-compiled parts of the SQL query
 	protected $set        = array();
-	protected $from       = array();
-	protected $join       = array();
 	protected $where      = array();
-	protected $orderby    = array();
-	protected $order      = array();
-	protected $groupby    = array();
-	protected $having     = array();
-	protected $distinct   = FALSE;
-	protected $limit      = FALSE;
-	protected $offset     = FALSE;
 	protected $last_query = '';
 
 	/**
@@ -61,7 +49,7 @@ class Postgres_Lite_Core {
 	}
 
 	/**
-	 * Returns the name of a given database instance.
+	 * Returns the name of a given Postgres_Lite instance.
 	 *
 	 * @param   Postgres_Lite  instance of Postgres_Lite
 	 * @return  string
