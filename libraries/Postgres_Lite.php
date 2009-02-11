@@ -185,10 +185,10 @@ class Postgres_Lite_Core {
 		if ( ! is_resource($this->link) AND ! is_object($this->link))
 		{
 			// Import the connect variables
-			extract($this->db_config['connection']);
+			extract($this->config['connection']);
 
 			// Persistent connections enabled?
-			$connect = ($this->db_config['persistent'] == TRUE) ? 'pg_pconnect' : 'pg_connect';
+			$connect = ($this->config['persistent'] == TRUE) ? 'pg_pconnect' : 'pg_connect';
 
 			// Build the connection info
 			$port = isset($port) ? 'port=\''.$port.'\'' : '';
@@ -199,9 +199,9 @@ class Postgres_Lite_Core {
 			// Make the connection and select the database
 			if ($this->link = $connect($connection_string))
 			{
-				if ($charset = $this->db_config['character_set'])
+				if ($charset = $this->config['character_set'])
 				{
-					echo $this->set_charset($charset);
+					$this->query('SET client_encoding TO '.pg_escape_string($this->link, $charset));
 				}
 		 
 				// Clear password after successful connect
@@ -237,7 +237,7 @@ class Postgres_Lite_Core {
 		$start = microtime(TRUE);
 
 		// Fetch the result
-		$result = new Pgsql_Result(pg_query($this->link, $this->last_query = $sql), $this->link, $this->db_config['object'], $sql);
+		$result = new Pgsql_Result(pg_query($this->link, $this->last_query = $sql), $this->link, $this->config['object'], $sql);
 
 		// Stop the benchmark
 		$stop = microtime(TRUE);
@@ -351,7 +351,7 @@ class Postgres_Lite_Core {
 
 	protected function escape_column($column)
 	{
-		if (!$this->db_config['escape'])
+		if (!$this->config['escape'])
 			return $column;
 
 		if (strtolower($column) == 'count(*)' OR $column == '*')
@@ -396,7 +396,7 @@ class Postgres_Lite_Core {
 
 	protected function escape_table($table)
 	{
-		if (!$this->db_config['escape'])
+		if (!$this->config['escape'])
 		{
 			return $table;
 		}
@@ -487,6 +487,369 @@ class Postgres_Lite_Core {
 		$this->where = array();
 	}
 } // End Postgres_Lite Class
+
+/**
+ * Database_Result
+ *
+ */
+abstract class Database_Result implements ArrayAccess, Iterator, Countable
+{
+	// Result resource, insert id, and SQL
+	protected $result;
+	protected $insert_id;
+	protected $sql;
+
+	// Current and total rows
+	protected $current_row = 0;
+	protected $total_rows  = 0;
+
+	// Fetch function and return type
+	protected $fetch_type;
+	protected $return_type;
+
+	/**
+	 * Returns the SQL used to fetch the result.
+	 *
+	 * @return  string
+	 */
+	public function sql()
+	{
+		return $this->sql;
+	}
+
+	/**
+	 * Returns the insert id from the result.
+	 *
+	 * @return  mixed
+	 */
+	public function insert_id()
+	{
+		return $this->insert_id;
+	}
+
+	/**
+	 * Prepares the query result.
+	 *
+	 * @param   boolean   return rows as objects
+	 * @param   mixed     type
+	 * @return  Database_Result
+	 */
+	abstract function result($object = TRUE, $type = FALSE);
+
+	/**
+	 * Builds an array of query results.
+	 *
+	 * @param   boolean   return rows as objects
+	 * @param   mixed     type
+	 * @return  array
+	 */
+	abstract function result_array($object = NULL, $type = FALSE);
+
+	/**
+	 * Gets the fields of an already run query.
+	 *
+	 * @return  array
+	 */
+	abstract public function list_fields();
+
+	/**
+	 * Seek to an offset in the results.
+	 *
+	 * @return  boolean
+	 */
+	abstract public function seek($offset);
+
+	/**
+	 * Countable: count
+	 */
+	public function count()
+	{
+		return $this->total_rows;
+	}
+
+	/**
+	 * ArrayAccess: offsetExists
+	 */
+	public function offsetExists($offset)
+	{
+		if ($this->total_rows > 0)
+		{
+			$min = 0;
+			$max = $this->total_rows - 1;
+
+			return ! ($offset < $min OR $offset > $max);
+		}
+
+		return FALSE;
+	}
+
+	/**
+	 * ArrayAccess: offsetGet
+	 */
+	public function offsetGet($offset)
+	{
+		if ( ! $this->seek($offset))
+			return FALSE;
+
+		// Return the row by calling the defined fetching callback
+		return call_user_func($this->fetch_type, $this->result, $this->return_type);
+	}
+
+	/**
+	 * ArrayAccess: offsetSet
+	 *
+	 * @throws  Kohana_Database_Exception
+	 */
+	final public function offsetSet($offset, $value)
+	{
+		throw new Kohana_Database_Exception('database.result_read_only');
+	}
+
+	/**
+	 * ArrayAccess: offsetUnset
+	 *
+	 * @throws  Kohana_Database_Exception
+	 */
+	final public function offsetUnset($offset)
+	{
+		throw new Kohana_Database_Exception('database.result_read_only');
+	}
+
+	/**
+	 * Iterator: current
+	 */
+	public function current()
+	{
+		return $this->offsetGet($this->current_row);
+	}
+
+	/**
+	 * Iterator: key
+	 */
+	public function key()
+	{
+		return $this->current_row;
+	}
+
+	/**
+	 * Iterator: next
+	 */
+	public function next()
+	{
+		++$this->current_row;
+		return $this;
+	}
+
+	/**
+	 * Iterator: prev
+	 */
+	public function prev()
+	{
+		--$this->current_row;
+		return $this;
+	}
+
+	/**
+	 * Iterator: rewind
+	 */
+	public function rewind()
+	{
+		$this->current_row = 0;
+		return $this;
+	}
+
+	/**
+	 * Iterator: valid
+	 */
+	public function valid()
+	{
+		return $this->offsetExists($this->current_row);
+	}
+
+} // End Database Result Interface
+
+/**
+ * PostgreSQL Result
+ */
+class Pgsql_Result extends Database_Result {
+
+	// Data fetching types
+	protected $fetch_type  = 'pgsql_fetch_object';
+	protected $return_type = PGSQL_ASSOC;
+
+	/**
+	 * Sets up the result variables.
+	 *
+	 * @param  resource  query result
+	 * @param  resource  database link
+	 * @param  boolean   return objects or arrays
+	 * @param  string    SQL query that was run
+	 */
+	public function __construct($result, $link, $object = TRUE, $sql)
+	{
+		$this->result = $result;
+
+		// If the query is a resource, it was a SELECT, SHOW, DESCRIBE, EXPLAIN query
+		if (is_resource($result))
+		{
+			// Its an DELETE, INSERT, REPLACE, or UPDATE query
+			if (preg_match('/^(?:delete|insert|replace|update)\b/iD', trim($sql), $matches))
+			{
+				$this->insert_id  = (strtolower($matches[0]) == 'insert') ? $this->insert_id() : FALSE;
+				$this->total_rows = pg_affected_rows($this->result);
+			}
+			else
+			{
+				$this->current_row = 0;
+				$this->total_rows  = pg_num_rows($this->result);
+				$this->fetch_type = ($object === TRUE) ? 'pg_fetch_object' : 'pg_fetch_array';
+			}
+		}
+		else
+		{
+			throw new Kohana_Database_Exception('database.error', pg_last_error().' - '.$sql);
+		}
+
+		// Set result type
+		$this->result($object);
+
+		// Store the SQL
+		$this->sql = $sql;
+	}
+
+	/**
+	 * Magic __destruct function, frees the result.
+	 */
+	public function __destruct()
+	{
+		if (is_resource($this->result))
+		{
+			pg_free_result($this->result);
+		}
+	}
+
+	public function result($object = TRUE, $type = PGSQL_ASSOC)
+	{
+		$this->fetch_type = ((bool) $object) ? 'pg_fetch_object' : 'pg_fetch_array';
+
+		// This check has to be outside the previous statement, because we do not
+		// know the state of fetch_type when $object = NULL
+		// NOTE - The class set by $type must be defined before fetching the result,
+		// autoloading is disabled to save a lot of stupid overhead.
+		if ($this->fetch_type == 'pg_fetch_object')
+		{
+			$this->return_type = (is_string($type) AND Kohana::auto_load($type)) ? $type : 'stdClass';
+		}
+		else
+		{
+			$this->return_type = $type;
+		}
+
+		return $this;
+	}
+
+	public function as_array($object = NULL, $type = PGSQL_ASSOC)
+	{
+		return $this->result_array($object, $type);
+	}
+
+	public function result_array($object = NULL, $type = PGSQL_ASSOC)
+	{
+		$rows = array();
+
+		if (is_string($object))
+		{
+			$fetch = $object;
+		}
+		elseif (is_bool($object))
+		{
+			if ($object === TRUE)
+			{
+				$fetch = 'pg_fetch_object';
+
+				// NOTE - The class set by $type must be defined before fetching the result,
+				// autoloading is disabled to save a lot of stupid overhead.
+				$type = (is_string($type) AND Kohana::auto_load($type)) ? $type : 'stdClass';
+			}
+			else
+			{
+				$fetch = 'pg_fetch_array';
+			}
+		}
+		else
+		{
+			// Use the default config values
+			$fetch = $this->fetch_type;
+
+			if ($fetch == 'pg_fetch_object')
+			{
+				$type = (is_string($type) AND Kohana::auto_load($type)) ? $type : 'stdClass';
+			}
+		}
+
+		while ($row = $fetch($this->result, NULL, $type))
+		{
+			$rows[] = $row;
+		}
+
+		return $rows;
+	}
+
+	public function insert_id()
+	{
+		if ($this->insert_id === NULL)
+		{
+			$query = 'SELECT LASTVAL() AS insert_id';
+
+			// Disable error reporting for this, just to silence errors on
+			// tables that have no serial column.
+			$ER = error_reporting(0);
+
+			$result = pg_query($query);
+			$insert_id = pg_fetch_array($result, NULL, PGSQL_ASSOC);
+
+			$this->insert_id = $insert_id['insert_id'];
+
+			// Reset error reporting
+			error_reporting($ER);
+		}
+
+		return $this->insert_id;
+	}
+
+	public function seek($offset)
+	{
+		if ( ! $this->offsetExists($offset))
+			return FALSE;
+
+		return pg_result_seek($this->result, $offset);
+	}
+
+	public function list_fields()
+	{
+		$field_names = array();
+		while ($field = pg_field_name($this->result))
+		{
+			$field_names[] = $field->name;
+		}
+
+		return $field_names;
+	}
+
+	/**
+	 * ArrayAccess: offsetGet
+	 */
+	public function offsetGet($offset)
+	{
+		if ( ! $this->seek($offset))
+			return FALSE;
+
+		// Return the row by calling the defined fetching callback
+		$fetch = $this->fetch_type;
+		return $fetch($this->result, NULL, $this->return_type);
+	}
+
+} // End Pgsql_Result Class
 
 /**
  * Sets the code for a Postgres_Lite exception.
