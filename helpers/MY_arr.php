@@ -205,10 +205,10 @@ class arr extends arr_Core {
 		return $tabs;
 	}
 	
-	function get($key, $array, $default = NULL)
-	{
-		if (!array_key_exists($key, $array)) { return $default; }
-		
-		return $array[$key];
-	}
+	function get($key, $array, $default = NULL, $return_default_when_empty = FALSE)
+    {
+        if (!array_key_exists($key, $array)) { return $default; }
+        
+        return ($return_default_when_empty === TRUE && $array[$key] === '') ? $default : $array[$key];
+    }
 }
