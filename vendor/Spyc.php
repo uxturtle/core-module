@@ -23,7 +23,7 @@
    * </code>
    * @package Spyc
    */
-class Spyc_Core {
+class Spyc {
 
   /**#@+
   * @access private

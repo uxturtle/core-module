@@ -5,6 +5,8 @@
  * @copyright  (c) 2009 LifeChurch.tv
  */
 
+require Kohana::find_file('vendor', 'Spyc');
+
 class yaml_Core {
 
 	public static function from_array(array $array, $indent = FALSE, $wordwrap = FALSE)
