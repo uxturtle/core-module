@@ -49,6 +49,23 @@ class Rest_Core {
 	{
 		$this->options[CURLOPT_USERPWD] = "$user:$password";
 	}
+
+	public function setPostFields($fields)
+	{
+		$string = '';
+		if (is_array($fields))
+		{
+			foreach ($fields as $key => $value)
+			{
+				$string .= '&'.urlencode($key).'='.urlencode($value);
+			}
+		}
+		else
+		{
+			$string = $fields;
+		}
+		$this->options[CURLOPT_POSTFIELDS] = $string;
+	}
 	
 	public function fetch($url)
 	{

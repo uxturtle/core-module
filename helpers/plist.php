@@ -23,7 +23,7 @@ class plist_Core {
 		return plist::parse_dom($dom);
 	}
 
-	public static function to_plist(array $array)
+	public static function from_array(array $array)
 	{
 		$out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol;
 		$out .= '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'.arr::$eol;
