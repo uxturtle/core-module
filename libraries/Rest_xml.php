@@ -19,7 +19,7 @@ class Rest_xml_Core extends Rest_Core {
 
 		if (stripos($this->output, '<?xml') === 0)
 		{
-			return new SimpleXMLElement($this->output);
+			return simplexml_load_string($this->output, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
 		else
 		{
