@@ -405,6 +405,28 @@ class Postgres_Lite_Core {
 	}
 
 	/**
+	 * Selects the where(s) for a database query.
+	 *
+	 * @param   string|array  key name or array of key => value pairs
+	 * @param   string        value to match with key
+	 * @param   boolean       disable quoting of WHERE clause
+	 * @return  Postgres_Lite_Core        This Postgres_Lite object.
+	 */
+	public function where($key, $value = NULL, $quote = TRUE)
+	{
+		$quote = (func_num_args() < 2 AND ! is_array($key)) ? -1 : $quote;
+		$keys  = is_array($key) ? $key : array($key => $value);
+
+		foreach ($keys as $key => $value)
+		{
+			$key           = (strpos($key, '.') !== FALSE) ? $this->config['table_prefix'].$key : $key;
+			$this->where[] = $this->driver_where($key, $value, 'AND ', count($this->where), $quote);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Builds a WHERE portion of a query.
 	 *
 	 * @param   mixed    key
@@ -414,7 +436,7 @@ class Postgres_Lite_Core {
 	 * @param   boolean  escape the value
 	 * @return  string
 	 */
-	public function where($key, $value, $type, $num_wheres, $quote)
+	protected function driver_where($key, $value, $type, $num_wheres, $quote)
 	{
 		$prefix = ($num_wheres == 0) ? '' : $type;
 
@@ -485,6 +507,73 @@ class Postgres_Lite_Core {
 		$this->set   = array();
 		$this->from  = array();
 		$this->where = array();
+	}
+
+	/**
+	 * Allows key/value pairs to be set for inserting or updating.
+	 *
+	 * @param   string|array  key name or array of key => value pairs
+	 * @param   string        value to match with key
+	 * @return  Postgres_Lite_Core        This Postgres_Lite object.
+	 */
+	public function set($key, $value = '')
+	{
+		if ( ! is_array($key))
+		{
+			$key = array($key => $value);
+		}
+
+		foreach ($key as $k => $v)
+		{
+			// Add a table prefix if the column includes the table.
+			if (strpos($k, '.'))
+				$k = $this->config['table_prefix'].$k;
+
+			$this->set[$k] = $this->escape($v);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Escapes any input value.
+	 *
+	 * @param   mixed   value to escape
+	 * @return  string
+	 */
+	public function escape($value)
+	{
+		if ( ! $this->config['escape'])
+			return $value;
+
+		switch (gettype($value))
+		{
+			case 'string':
+				$value = '\''.$this->escape_str($value).'\'';
+			break;
+			case 'boolean':
+				$value = (int) $value;
+			break;
+			case 'double':
+				// Convert to non-locale aware float to prevent possible commas
+				$value = sprintf('%F', $value);
+			break;
+			default:
+				$value = ($value === NULL) ? 'NULL' : $value;
+			break;
+		}
+
+		return (string) $value;
+	}
+
+	public function escape_str($str)
+	{
+		if (!$this->config['escape'])
+			return $str;
+
+		is_resource($this->link) or $this->connect();
+
+		return pg_escape_string($this->link, $str);
 	}
 } // End Postgres_Lite Class
 
@@ -665,6 +754,7 @@ abstract class Database_Result implements ArrayAccess, Iterator, Countable
 	{
 		return $this->offsetExists($this->current_row);
 	}
+
 
 } // End Database Result Interface
 
