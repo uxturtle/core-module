@@ -41,7 +41,7 @@ class Fire_Profiler extends FirePHP{
 	 * @return  void
 	 */	
 	public function database(){
-		$queries = Database::$benchmarks;
+		$queries = Postgres_Lite::$benchmarks;
 
 		$total_time = $total_rows = 0;
 		$table = array();
