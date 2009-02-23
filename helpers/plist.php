@@ -25,11 +25,11 @@ class plist_Core {
 
 	public static function from_array(array $array)
 	{
-		$out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol;
-		$out .= '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'.arr::$eol;
-		$out .= '<plist version="1.0">'.arr::$eol;
+		$out = '<?xml version="1.0" encoding="UTF-8"?>'.plist::$eol;
+		$out .= '<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'.plist::$eol;
+		$out .= '<plist version="1.0">'.plist::$eol;
 		$out .= self::parse_plist_value($array);
-		$out .= '</plist>'.arr::$eol;
+		$out .= '</plist>'.plist::$eol;
 		return $out;
 	}
 	
@@ -43,8 +43,13 @@ class plist_Core {
 				$svalue = '<integer>'.$value.'</integer>';
 				break;
 
+			// real
+			case ((is_numeric($value) && is_float($value) === TRUE)):
+				$svalue = '<real>'.$value.'</real>';
+				break;
+
 			// date
-			case (!is_array($value) && preg_match('/[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}Z/', $value)):
+			case (!is_array($value) && (preg_match('/[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}\:[0-9]{2}(Z|[\-\+][0-9]{2}\:[0-9]{2})/', $value))):
 				$svalue = '<date>'.$value.'</date>';
 				break;
 
@@ -66,7 +71,7 @@ class plist_Core {
 
 			// dict
 			case (is_array($value) && arr::is_assoc($value)):
-				$svalue = ($key ? arr::$eol.self::tabs($tab_level) : '').'<dict>'.arr::$eol;
+				$svalue = ($key ? plist::$eol.self::tabs($tab_level) : '').'<dict>'.plist::$eol;
 				$tab_level++;
 				foreach ($value as $vkey => $vvalue)
 				{
@@ -79,7 +84,7 @@ class plist_Core {
 
 			// array
 			case (is_array($value) && !arr::is_assoc($value)):
-				$svalue = ($key ? arr::$eol : '').self::tabs($tab_level).'<array>'.arr::$eol;
+				$svalue = ($key ? plist::$eol : '').self::tabs($tab_level).'<array>'.plist::$eol;
 				$tab_level++;
 				foreach ($value as $vvalue)
 				{
@@ -89,7 +94,7 @@ class plist_Core {
 				$svalue .= self::tabs($tab_level).'</array>';
 				break;
 		}
-		return self::tabs($tab_level).($key ? '<key>'.$key.'</key>' : '').$svalue.arr::$eol;
+		return self::tabs($tab_level).($key ? '<key>'.$key.'</key>' : '').$svalue.plist::$eol;
 	}
 	
 	private static function tabs($tab_level)
