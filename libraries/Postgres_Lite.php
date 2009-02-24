@@ -552,7 +552,8 @@ class Postgres_Lite_Core {
 				$value = '\''.$this->escape_str($value).'\'';
 			break;
 			case 'boolean':
-				$value = (int) $value;
+/* 				$value = (int) $value; */
+				$value = ($value) ? 'true' : 'false';
 			break;
 			case 'double':
 				// Convert to non-locale aware float to prevent possible commas

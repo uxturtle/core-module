@@ -12,7 +12,7 @@ class arr extends arr_Core {
 	public static $eol = "\n";
 	
 	public static $xml_default_tag = "item";
-	
+		
 	public static function is_assoc(array $array)
 	{
 		// Keys of the array
@@ -80,16 +80,16 @@ class arr extends arr_Core {
 
 			// string
 			case (is_string($value)):
-				if (trim($value) == '') 
+				if (empty($value)) 
 				{
-				$svalue = "<$tag />";
-			}
-			else
-			{
-				// TODO: correctly parse &
-				$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
-			}
-			break;
+					$svalue = "<$tag />";
+				}
+				else
+				{
+					// TODO: correctly parse &
+					$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+				}
+				break;
 
 			// assoc array
 			case (is_array($value)):
@@ -135,7 +135,14 @@ class arr extends arr_Core {
 				
 			// others 
 			default:
-				$svalue = "<$tag>$value</$tag>";
+				if (empty($value))
+				{
+					$svalue = "<$tag />";
+				}
+				else
+				{
+					$svalue = "<$tag>$value</$tag>";
+				}
 				break;
 		}
 		return self::tabs($tab_level).$svalue.arr::$eol;
