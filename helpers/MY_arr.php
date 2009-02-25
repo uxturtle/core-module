@@ -23,7 +23,7 @@ class arr extends arr_Core {
 		return array_keys($keys) !== $keys;
 	}
 	
-	public static function get($key, $array, $default = NULL, $return_default_when_empty = FALSE)
+	public static function get($key, $array, $default = FALSE, $return_default_when_empty = TRUE)
 	{
 		if (!array_key_exists($key, $array))
 		{
