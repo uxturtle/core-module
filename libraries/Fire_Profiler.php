@@ -49,10 +49,20 @@ class Fire_Profiler extends FirePHP{
 		
 		foreach ($queries as $query)
 		{
-			$table[]=array(str_replace("\n",' ',$query['query']), number_format($query['time'], 3), $query['rows']);
+			if (mb_strlen($query['query']) < 2048)
+			{
+				$table[]=array(str_replace("\n",' ',$query['query']), number_format($query['time'], 3), $query['rows']);
 
-			$total_time += $query['time'];
-			$total_rows += $query['rows'];
+				$total_time += $query['time'];
+				$total_rows += $query['rows'];
+			}
+			else
+			{
+				$table[]=array(str_replace("\n",' ',text::limit_chars($query['query'], 2036, ' [TRUNCATED]')), number_format($query['time'], 3), $query['rows']);
+
+				$total_time += $query['time'];
+				$total_rows += $query['rows'];
+			}
 		}
 
 		$this->fb(array(count($queries).' SQL queries took '.number_format($total_time,3).' seconds and returned '.$total_rows.' rows',  $table
