@@ -40,15 +40,15 @@ class memcached_Core {
 
 		$key = '';
 
-		foreach ($args as $arg)
+		foreach ($args as $i => $arg)
 		{
 			if (is_array($arg) === TRUE)
 			{
-				$key .= implode('_', $arg);
+				$key .= ($i === 0) ? implode('_', $arg) : ('_' . implode('_', $arg));
 			}
 			else
 			{
-				$key .= (string) $arg;
+				$key .= ($i === 0) ? (string) $arg : ('_' . (string) $arg);
 			}
 		}
 
