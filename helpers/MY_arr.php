@@ -132,17 +132,10 @@ class arr extends arr_Core {
 					}
 				}
 				break;
-				
+			
 			// others 
 			default:
-				if (empty($value))
-				{
-					$svalue = "<$tag />";
-				}
-				else
-				{
-					$svalue = "<$tag>$value</$tag>";
-				}
+				$svalue = "<$tag>$value</$tag>";
 				break;
 		}
 		return self::tabs($tab_level).$svalue.arr::$eol;
