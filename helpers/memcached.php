@@ -44,6 +44,7 @@ class memcached_Core {
 		{
 			if (is_array($arg) === TRUE)
 			{
+				array_walk($arg, array('self', 'array_value_to_str'));
 				$key .= ($i === 0) ? implode('_', $arg) : ('_' . implode('_', $arg));
 			}
 			else
@@ -95,5 +96,17 @@ class memcached_Core {
 	{
 		$tags = (is_array($tags) === TRUE) ? array_walk($tags, 'mb_strtolower') : mb_strtolower($tags);
 		return self::connect()->tags_delete($tags);
+	}
+
+	private static function array_value_to_str(&$value, $key)
+	{
+		if (is_bool($value) === TRUE)
+		{
+			$value = ($value === TRUE) ? 'true' : 'false';
+		}
+		else
+		{
+			$value = (string) $value;
+		}
 	}
 }
