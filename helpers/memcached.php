@@ -94,7 +94,15 @@ class memcached_Core {
 
 	public static function tags_delete($tags)
 	{
-		$tags = (is_array($tags) === TRUE) ? array_walk($tags, 'mb_strtolower') : mb_strtolower($tags);
+		if (is_array($tags) === TRUE)
+		{
+			array_walk($tags, array('self', 'mb_strtolower_array'));
+		}
+		else
+		{
+			$tags = mb_strtolower($tags);
+		}
+
 		return self::connect()->tags_delete($tags);
 	}
 
@@ -108,5 +116,15 @@ class memcached_Core {
 		{
 			$value = (string) $value;
 		}
+	}
+
+	private static function mb_strtolower_array(&$value, $key)
+	{
+		if (is_array($value) === TRUE)
+		{
+			$value = implode('-', $value);
+		}
+
+		$value = mb_strtolower($value);
 	}
 }
