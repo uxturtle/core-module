@@ -35,17 +35,18 @@ class arr extends arr_Core {
 	/**
 	 * build_assoc
 	 * 
-	 * initializes an associative array to NULL
+	 * initializes an associative array to a value
 	 *
 	 * @param array $keys the keys of the associative array
+	 * @param array $default value to initialize to
 	 * @return array the resulting array
 	 * @author Kevin Morey
 	 */
-	function build_assoc(array $keys)
+	function build_assoc(array $keys, $default = NULL)
 	{		
 		$arr = array();
 		
-		foreach ($keys as $key) { $arr[$key] = NULL; }
+		foreach ($keys as $key) { $arr[$key] = $default; }
 		
 		return $arr;
 	}
