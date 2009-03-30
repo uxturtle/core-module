@@ -61,10 +61,10 @@ class memcached_Core {
 		return self::connect()->get($keys);
 	}
 
-	public static function set($key, $value, $flag = FALSE, $expire = FALSE)
+	public static function set($key, $value, $expire = FALSE, $flag = FALSE)
 	{
-		$flag   = ($flag === FALSE) ? self::$set_flag : $flag;
 		$expire = ($expire === FALSE) ? self::$set_expire : (int) $expire;
+		$flag   = ($flag === FALSE) ? self::$set_flag : $flag;
 
 		return self::connect()->set($key, $value, $flag, $expire);
 	}
