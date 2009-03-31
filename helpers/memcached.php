@@ -82,7 +82,7 @@ class memcached_Core {
 
 	public static function tags_add($key, $tag)
 	{
-		$tags = (is_array($tag) === TRUE) ? $tags : array_slice(func_get_args(), 1);
+		$tags = (is_array($tag) === TRUE) ? $tag : array_slice(func_get_args(), 1);
 
 		foreach ($tags as $tag)
 		{
