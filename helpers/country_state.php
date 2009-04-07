@@ -10,19 +10,16 @@
  **/
 class country_state {
 
-	public static function countries() {
-		$db = new Database;
-		return $db->from('countries')->get()->result_array(false);
+	public static function countries($db) {
+		return $db->query('select * from countries')->result_array(false);
 	}
 
-	public static function getCountryByISO($iso)
+	public static function getCountryByISO($db, $iso)
 	{
-		$db = new Database;
-		return $db->from('countries')->where(array('iso' => $iso))->limit(1)->get()->current();
+		return $db->query('select * from countries where iso = '.$db->escape($iso).' limit 1')->current();
 	}
 
-	public static function states() {
-		$db = new Database;
-		return $db->from('states')->get()->result_array(false);
+	public static function states($db) {
+		return $db->query('select * from states')->result_array(false);
 	}
 }
