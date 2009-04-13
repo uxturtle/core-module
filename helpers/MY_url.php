@@ -8,6 +8,6 @@ class url extends url_Core {
 
 	public static function referer($default = FALSE)
 	{
-		return ($_SERVER['HTTP_REFERER'] ? $_SERVER['HTTP_REFERER'] : $default);
+		return (isset($_SERVER['HTTP_REFERER']) && !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $default);
 	}
 }
