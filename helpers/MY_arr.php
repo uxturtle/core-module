@@ -32,6 +32,26 @@ class arr extends arr_Core {
 		return ($return_default_when_empty === TRUE && $array[$key] === '') ? $default : $array[$key];
 	}
 
+	public static function implode()
+	{
+		$argv = func_get_args();
+		$argc = func_num_args();
+				
+		if ($argc == 2)
+		{
+			return implode($argv[0], $argv[1]);
+		}
+		
+		$arr = $argv[2];
+		if (count($arr) <= 2)
+		{
+			return implode($argv[1], $arr);
+		}
+		
+		$first = array_slice($arr, 0, count($arr) - 1);
+		return implode($argv[0], $first).$argv[1].array_pop($arr);
+	}
+	
 	/**
 	 * build_assoc
 	 * 

@@ -220,6 +220,12 @@ class Postgres_Lite_Core {
 		}
 	}
 
+	public function nextval($table, $column)
+	{
+		$result = $this->query("select nextval(pg_get_serial_sequence('$table','$column')) as next_val")->current();
+		return $result['next_val'];
+	}
+	
 	/**
 	 * Runs a query and returns the result.
 	 *
