@@ -80,9 +80,9 @@ class arr extends arr_Core {
 	* @return void
 	* @author Kevin Morey
 	*/
-	public static function to_xml(array $array, $root_tag = '')
+	public static function to_xml(array $array, $root_tag = '', $append_header = TRUE)
 	{
-		$out = '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol;
+		$out = $append_header ? '<?xml version="1.0" encoding="UTF-8"?>'.arr::$eol : '';
 		$out .= arr::parse_xml_value($array, $root_tag);
 		return $out;
 	}
@@ -108,7 +108,14 @@ class arr extends arr_Core {
 				else
 				{
 					// TODO: correctly parse &
-					$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+					if (stripos($value, '<![CDATA[') === 0)
+					{
+						$svalue = "<$tag>".iconv('UTF-8', 'UTF-8//IGNORE', $value)."</$tag>";
+					}
+					else
+					{
+						$svalue = "<$tag>".htmlspecialchars(iconv('UTF-8', 'UTF-8//IGNORE', $value), ENT_NOQUOTES, 'UTF-8')."</$tag>";
+					}
 				}
 				break;
 
