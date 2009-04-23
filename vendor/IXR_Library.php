@@ -158,7 +158,7 @@ class IXR_Message {
     }
     function parse() {
         // first remove the XML declaration
-        $this->message = preg_replace('/<\?xml(.*)?\?'.'>/', '', $this->message);
+        $this->message = preg_replace('/<\?xml.*?\?'.'>/', '', $this->message);
         if (trim($this->message) == '') {
             return false;
         }
@@ -681,7 +681,7 @@ class IXR_Date {
         $this->timezone = substr($iso, 17);
     }
     function getIso() {
-		// WP adds timezone. See #2036
+    	// WP adds timezone. See #2036
         return $this->year.$this->month.$this->day.'T'.$this->hour.':'.$this->minute.':'.$this->second.$this->timezone;
     }
     function getXml() {
