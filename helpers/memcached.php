@@ -44,8 +44,11 @@ class memcached_Core {
 		{
 			if (is_array($arg) === TRUE)
 			{
-				array_walk($arg, array('self', 'array_value_to_str'));
-				$key .= ($i === 0) ? implode('_', $arg) : ('_' . implode('_', $arg));
+				if (count($arg) > 0)
+				{
+					array_walk($arg, array('self', 'array_value_to_str'));
+					$key .= ($i === 0) ? implode('_', $arg) : ('_' . implode('_', $arg));
+				}
 			}
 			else
 			{
@@ -108,14 +111,7 @@ class memcached_Core {
 
 	private static function array_value_to_str(&$value, $key)
 	{
-		if (is_bool($value) === TRUE)
-		{
-			$value = ($value === TRUE) ? 'true' : 'false';
-		}
-		else
-		{
-			$value = (string) $value;
-		}
+		$value = bool::to_string($value);
 	}
 
 	private static function mb_strtolower_array(&$value, $key)
