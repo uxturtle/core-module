@@ -34,4 +34,14 @@ class text extends text_Core {
 		// Remove the extra spaces introduced on explode above and return the cleaned string
 		return str_replace(' ', '', $clean_str);
 	}
+	
+	public static function slugify($string)
+	{
+		$string = strtolower($string);
+		$string = preg_replace('/[^ a-zA-Z0-9]/', ' ', $string);
+		$string = str_replace(' ', '-', $string);
+		$string = preg_replace('/-+/', '-', $string);
+		
+		return $string;
+	}
 }
